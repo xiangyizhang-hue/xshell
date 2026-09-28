@@ -1,17 +1,17 @@
-# xShell 自定义 Linux 命令解释器
+# xShell：自定义 Linux 命令解释器
 
-xShell 是一个用于学习 Linux 进程与文件描述符的教学型 Shell。项目按 `main`、`builtin`、`external`、`pipe`、`redirect`、`history`、`logger`、`utils` 八个模块组织。
+我用 C 做了一个教学型 Shell，用它练习 Linux 进程、文件描述符和目录操作。它不是 Bash 的替代品；项目重点是弄清楚一条命令怎样从输入解析走到进程创建、重定向和执行。
 
-## 已实现
+## 我做了什么
 
-- 使用 `fork`、`execvp`、`waitpid` 执行外部命令。
-- 使用 `pipe`、`dup2` 支持多级管道。
-- 支持 `>`、`>>` 和 `2>` 重定向。
-- 提供 `xpwd`、`xcd`、`xls`、`xtouch`、`xecho`、`xcat`、`xcp`、`xrm`、`xmv`、`xhistory`、`xtee`、`xjournalctl` 等内建命令。
-- 记录命令历史和本地日志；使用 `SIGINT` 处理中断。
-- `xcp -r` 与 `xrm -r` 支持递归目录操作。
+- 用 `fork`、`execvp` 和 `waitpid` 运行外部程序，并处理基本的中断信号。
+- 用 `pipe` 和 `dup2` 串接多级管道，支持 `>`、`>>`、`2>` 输出重定向。
+- 实现 `xcd`、`xpwd`、`xls`、`xcat`、`xcp`、`xrm` 等内建命令，其中复制和删除支持递归目录操作。
+- 把命令执行、管道、重定向、历史记录和日志拆成独立模块；补充冒烟测试，在 GitHub Actions 的 Ubuntu 环境中构建验证。
 
-## 构建与测试
+我整理这份代码时重点排查了 `OLDPWD` 更新、重定向后文件描述符恢复，以及递归文件操作的路径处理。这些问题比“命令能跑一次”更能帮助我理解 Shell 的状态管理。
+
+## 构建与试用
 
 需要 Linux、GCC 和 Make：
 
@@ -21,8 +21,8 @@ make test
 ./xshell
 ```
 
-测试覆盖外部命令、输出重定向、多级管道以及递归复制/删除的基本路径。GitHub Actions 会在 Ubuntu 上自动构建和运行冒烟测试。
+进入 xShell 后，可以尝试 `xpwd`、`xls`、`xcd ..`，也可以运行 `echo hello | wc -c` 和 `echo hello > output.txt`。自动测试覆盖外部命令、重定向、管道及递归复制/删除的基本路径。
 
-## 项目边界
+## 当前边界
 
-这是教学实现，不等同于 Bash。目前不支持引号与转义、变量展开、作业控制、命令替换和输入重定向；管道中的命令按外部程序执行，内建命令不会改变父进程状态。
+目前没有实现引号与转义、变量展开、命令替换、作业控制和输入重定向。管道中的命令按外部程序执行；不能把它当作完整的 Bash 使用。
